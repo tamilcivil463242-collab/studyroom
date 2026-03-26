@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}{{ course['name'] }} | STUDY ROOM{% endblock %}
+{% block content %}
+<main
+    class="page explorer-page lms-course-page"
+    data-course-page
+    data-course-id="{{ course['id'] }}"
+    data-active-node-id="{{ active_node['id'] if active_node else '' }}"
+    data-active-node-type="{{ active_node['type'] if active_node else '' }}"
+    data-active-parent-id="{{ active_node['parent_id'] if active_node and active_node['parent_id'] else '' }}"
+    {% if shared %}data-share-token="{{ course['share_token'] }}"{% endif %}
+>
+    <section class="course-workspace">
+        <aside class="sidebar-panel">
+            <div class="sidebar-panel-head">
+                <a class="back-link" href="{{ url_for('index') }}">&#8249; Learn</a>
+                <label class="search-shell">
+                    <span>⌕</span>
+                    <input type="text" id="treeSearch" placeholder="Search folders and files">
+                </label>
+            </div>
+            <div class="tree-list">
+                {% if tree %}
+                    {% for item in tree %}
+                        {% include "partials/tree_item.html" %}
+                    {% endfor %}
+                {% else %}
+                    <p class="muted">No folders or files yet. Use the <strong>+</strong> button to start.</p>
+                {% endif %}
+            </div>
+        </aside>
+
+        <section class="content-panel">
+            <div class="course-path-bar">
+                <div class="course-path">
+                    <a href="{{ url_for('index') }}">Courses</a>
+                    <span>/</span>
+                    <a href="{% if shared %}{{ url_for('shared_course_view', token=course['share_token']) }}{% else %}{{ url_for('course_view', course_id=course['id']) }}{% endif %}">{{ course['name'] }}</a>
+                    {% for crumb in breadcrumb %}
+                        <span>/</span>
+                        <a
+                            href="{% if shared %}{{ url_for('shared_course_view', token=course['share_token'], node=crumb['id']) }}{% else %}{{ url_for('course_view', course_id=course['id'], node=crumb['id']) }}{% endif %}"
+                        >{{ crumb['name'] }}</a>
+                    {% endfor %}
+                </div>
+                {% if not read_only %}
+                    <button class="plus-button" data-action="open-create-item" title="Create item">+</button>
+                {% endif %}
+            </div>
+
+            <section class="reader-panel">
+                {% if active_node %}
+                    {% if active_node['type'] == 'folder' %}
+                        {% if active_node['children'] %}
+                            <div class="content-list activity-feed">
+                                {% for child in active_node['children'] %}
+                                    <a class="content-row course-row" href="{% if child['type'] == 'link' %}{{ url_for('go_to_node', node_id=child['id']) }}{% elif shared %}{{ url_for('shared_course_view', token=course['share_token'], node=child['id']) }}{% else %}{{ url_for('course_view', course_id=course['id'], node=child['id']) }}{% endif %}">
+                                        <div>
+                                            <strong>{{ child['name'] }}</strong>
+                                            <small>{{ child['type']|title }}</small>
+                                        </div>
+                                        <span>&rsaquo;</span>
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-reader"></div>
+                        {% endif %}
+                    {% elif active_node['type'] == 'file' %}
+                        <div class="preview-box">
+                            {% if active_node['mime_type'] and active_node['mime_type'].startswith('image/') %}
+                                <img class="preview-image" src="{{ url_for('uploaded_file', relative_path=active_node['file_path']) }}" alt="{{ active_node['name'] }}">
+                            {% elif active_node['mime_type'] and active_node['mime_type'].startswith('video/') %}
+                                <video class="preview-video" controls>
+                                    <source src="{{ url_for('uploaded_file', relative_path=active_node['file_path']) }}" type="{{ active_node['mime_type'] }}">
+                                </video>
+                            {% elif active_node['mime_type'] and active_node['mime_type'].startswith('audio/') %}
+                                <audio class="preview-audio" controls>
+                                    <source src="{{ url_for('uploaded_file', relative_path=active_node['file_path']) }}" type="{{ active_node['mime_type'] }}">
+                                </audio>
+                            {% elif active_node['mime_type'] == 'application/pdf' %}
+                                <button
+                                    type="button"
+                                    class="preview-fullscreen-btn"
+                                    data-action="toggle-preview-fullscreen"
+                                    title="Full screen"
+                                    aria-label="Toggle full screen"
+                                >
+                                    <span data-icon="enter">⤢</span>
+                                    <span data-icon="exit" hidden>⤡</span>
+                                </button>
+                                <iframe
+                                    class="preview-frame"
+                                    src="{{ url_for('uploaded_file', relative_path=active_node['file_path']) }}"
+                                    title="{{ active_node['name'] }}"
+                                ></iframe>
+                            {% elif active_node['mime_type'] and active_node['mime_type'].startswith('text/') %}
+                                <iframe
+                                    class="preview-frame"
+                                    src="{{ url_for('uploaded_file', relative_path=active_node['file_path']) }}"
+                                    title="{{ active_node['name'] }}"
+                                ></iframe>
+                            {% else %}
+                                <div class="download-card">
+                                    <p>This file type is saved and available for download.</p>
+                                    <a class="primary-button" href="{{ url_for('uploaded_file', relative_path=active_node['file_path']) }}" target="_blank">Open file</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% elif active_node['type'] == 'link' %}
+                        <div class="download-card">
+                            <p>This saved hyperlink opens its original page directly.</p>
+                            <a class="primary-button" href="{{ active_node['external_url'] }}" target="_blank" rel="noreferrer">Open link</a>
+                            <p class="muted">{{ active_node['external_url'] }}</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="empty-reader"></div>
+                {% endif %}
+            </section>
+        </section>
+    </section>
+</main>
+{% endblock %}

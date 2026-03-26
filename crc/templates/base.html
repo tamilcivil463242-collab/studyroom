@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="{{ current_theme }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}STUDY ROOM{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css', v=static_version) }}">
+</head>
+<body>
+    <div class="dashboard-shell">
+        <div class="dashboard-main">
+            <header class="app-header">
+                <div class="app-header-left">
+                    <a class="brand-block header-brand" href="{{ url_for('index') }}">
+                        <div class="brand-logo" aria-label="Study Room">SR</div>
+                        <div>
+                            <strong>STUDY ROOM</strong>
+                        </div>
+                    </a>
+                </div>
+                <div class="app-header-right">
+                    <label class="theme-picker">
+                        <span>Theme</span>
+                        <select id="themeSelect">
+                            <option value="system" {% if current_theme == 'system' %}selected{% endif %}>System</option>
+                            <option value="light" {% if current_theme == 'light' %}selected{% endif %}>Light</option>
+                            <option value="dark" {% if current_theme == 'dark' %}selected{% endif %}>Dark</option>
+                        </select>
+                    </label>
+                </div>
+            </header>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="flash-stack">
+                        {% for message in messages %}
+                            <div class="flash">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <div class="main-scroll">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <dialog id="modal" class="modal">
+        <form method="dialog" class="modal-card" id="modalCard">
+            <div class="modal-head">
+                <h3 id="modalTitle">Action</h3>
+                <button type="button" class="ghost-button" data-close-modal>&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-actions" id="modalActions"></div>
+        </form>
+    </dialog>
+
+    <script src="{{ url_for('static', filename='app.js', v=static_version) }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

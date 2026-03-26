@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}Courses | STUDY ROOM{% endblock %}
+{% block content %}
+<main class="page dashboard-page">
+    <section class="dashboard-layout">
+        <div class="dashboard-left">
+            <section class="section-bar">
+                <div class="section-actions">
+                    <button
+                        class="plus-button plus-button-lg"
+                        data-modal="create-course"
+                        title="Create course"
+                        aria-label="Create course"
+                    >+</button>
+                </div>
+            </section>
+
+            {% if courses %}
+                <section class="course-grid lms-grid">
+                    {% for course in courses %}
+                        <article
+                            class="course-card module-card {% if course['pinned'] %}is-pinned{% endif %}"
+                            data-course-card
+                            data-course-id="{{ course['id'] }}"
+                            data-course-name="{{ course['name'] }}"
+                            data-course-pinned="{{ course['pinned'] }}"
+                        >
+                            <a class="module-card-main" href="{{ url_for('course_view', course_id=course['id']) }}">
+                                <div class="module-title-wrap">
+                                    <h3>{{ course['name'] }}</h3>
+                                    <div class="module-meta">
+                                        <span>{{ course['item_count'] }} contents</span>
+                                        {% if course['pinned'] %}<span class="pin-mark">Pinned</span>{% endif %}
+                                    </div>
+                                </div>
+                            </a>
+                            <div class="card-menu-wrap">
+                                <button
+                                    class="dots-button"
+                                    type="button"
+                                    data-action="toggle-course-menu"
+                                    aria-label="Open course actions"
+                                    aria-expanded="false"
+                                >
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </button>
+                                <div class="card-menu" hidden>
+                                    <button class="menu-item" data-action="rename-course" type="button">Rename</button>
+                                    <button class="menu-item" data-action="toggle-pin-course" type="button">
+                                        {% if course['pinned'] %}Unpin{% else %}Pin{% endif %}
+                                    </button>
+                                    <button class="menu-item" data-action="share-course" type="button">Share</button>
+                                    <button class="menu-item danger" data-action="delete-course" type="button">Delete</button>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% else %}
+                <div class="empty-state dark-empty">
+                    <h3>No courses yet</h3>
+                    <p>Use the large <strong>+</strong> button to create your first course.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <aside class="dashboard-side">
+            <section class="panel analytics-panel">
+                <div class="panel-head">
+                    <strong>Time Spent</strong>
+                    <small class="muted">By folder</small>
+                </div>
+                <div class="analytics-body">
+                    <div class="donut-wrap">
+                        <canvas id="timeDonut" width="220" height="220" aria-label="Time spent donut chart"></canvas>
+                        <div id="donutTooltip" class="donut-tooltip" hidden></div>
+                    </div>
+                    <div id="timeLegend" class="analytics-legend"></div>
+                </div>
+            </section>
+
+            <section class="panel history-panel">
+                <div class="panel-head">
+                    <strong>History</strong>
+                    <small class="muted">Recently opened</small>
+                </div>
+                <div id="recentHistory" class="history-list muted">No recent activity yet.</div>
+            </section>
+        </aside>
+    </section>
+
+</main>
+{% endblock %}

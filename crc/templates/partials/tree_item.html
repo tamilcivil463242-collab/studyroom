@@ -1,0 +1,65 @@
+{% set item_url = url_for('go_to_node', node_id=item['id'], shared=course['share_token']) if shared and item['type'] == 'link' else (url_for('go_to_node', node_id=item['id']) if item['type'] == 'link' else (url_for('shared_course_view', token=course['share_token'], node=item['id']) if shared else url_for('course_view', course_id=course['id'], node=item['id']))) %}
+<div class="tree-item depth-{{ loop.depth0 if loop is defined else 0 }}">
+    {% if item['type'] == 'folder' %}
+        <details class="tree-folder" {% if item['id'] in active_branch_ids %}open{% endif %}>
+            <summary>
+                <div
+                    class="tree-item-row"
+                    {% if not read_only %}
+                        data-node-card
+                        data-node-id="{{ item['id'] }}"
+                        data-node-name="{{ item['name'] }}"
+                        data-node-pinned="{{ item['pinned'] }}"
+                    {% endif %}
+                >
+                    <a href="{{ item_url }}" class="tree-link {% if active_node and active_node['id'] == item['id'] %}active{% endif %}">
+                        <span class="tree-node-main">
+                            <button class="tree-toggle" type="button" data-action="toggle-tree-folder" aria-label="Toggle folder">▸</button>
+                            <span class="tree-label">{{ item['name'] }}</span>
+                        </span>
+                        {% if item['pinned'] %}<small>pinned</small>{% endif %}
+                    </a>
+                    {% if not read_only %}
+                        <div class="card-menu node-context-menu" hidden>
+                            <button class="menu-item" data-action="rename-node" type="button">Rename</button>
+                            <button class="menu-item" data-action="toggle-pin-node" type="button">{% if item['pinned'] %}Unpin{% else %}Pin{% endif %}</button>
+                            <button class="menu-item" data-action="share-node" type="button">Share</button>
+                            <button class="menu-item danger" data-action="delete-node" type="button">Delete</button>
+                        </div>
+                    {% endif %}
+                </div>
+            </summary>
+            <div class="tree-children">
+                {% for item in item['children'] %}
+                    {% include "partials/tree_item.html" %}
+                {% endfor %}
+            </div>
+        </details>
+    {% else %}
+        <div
+            class="tree-leaf tree-item-row"
+            {% if not read_only %}
+                data-node-card
+                data-node-id="{{ item['id'] }}"
+                data-node-name="{{ item['name'] }}"
+                data-node-pinned="{{ item['pinned'] }}"
+            {% endif %}
+        >
+            <a href="{{ item_url }}" class="tree-link {% if active_node and active_node['id'] == item['id'] %}active{% endif %}">
+                <span class="tree-node-main">
+                    <span class="tree-node-icon">{% if item['type'] == 'link' %}↗{% else %}•{% endif %}</span>
+                    <span class="tree-label">{{ item['name'] }}</span>
+                </span>
+                <small>{{ item['type'] }}</small>
+            </a>
+            {% if not read_only %}
+                <div class="card-menu node-context-menu" hidden>
+                    <button class="menu-item" data-action="rename-node" type="button">Rename</button>
+                    <button class="menu-item" data-action="toggle-pin-node" type="button">{% if item['pinned'] %}Unpin{% else %}Pin{% endif %}</button>
+                    <button class="menu-item" data-action="share-node" type="button">Share</button>
+                    <button class="menu-item danger" data-action="delete-node" type="button">Delete</button>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
